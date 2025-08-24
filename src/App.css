@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+#root {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  height: fit-content;
+  text-align: center;
+  background-color: linear-gradient(
+    rgb(7, 7, 7),
+    rgb(255, 45, 8),
+    rgb(145, rgb(145, 35, 7), 34, 7),
+    rgb(145, rgb(145, 35, 7), 34, 7)
+  );
+}
