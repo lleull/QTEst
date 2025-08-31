@@ -23,11 +23,16 @@ import {
   ChevronRight,
   Filter,
   Zap,
+  LogOut,
 } from "lucide-react";
 import axios from "axios";
+import newsHeroBg from "./../assets/bg.jpg";
+import { logout } from "../services";
+// Mock logout function for now
 
 const NewsHub = () => {
   const [articles, setArticles] = useState([]);
+  const [updatedNews, setUpdatedNews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -41,7 +46,9 @@ const NewsHub = () => {
 
     try {
       const response = await axios.get(apiUrl);
-      setArticles(response.data.articles);
+      console.log(response.data);
+      setUpdatedNews(response.data);
+      setArticles(response.data.articles || []);
     } catch (err) {
       console.error("Error fetching news:", err);
       setError("Failed to fetch news. Please try again later.");
@@ -113,16 +120,7 @@ const NewsHub = () => {
     },
   };
 
-  const navigationItems = [
-    "All",
-    "World",
-    "Politics",
-    "Business",
-    "Technology",
-    "Sports",
-    "Health",
-  ];
-  const categories = ["Breaking", "Trending", "Latest", "Featured"];
+  const navigationItems = ["Business", "Technology", "Sports", "Health"];
 
   return (
     <div className="min-h-screen bg-background">
@@ -131,30 +129,25 @@ const NewsHub = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="fixed w-full z-50 glass border-b border-border/50"
+        className="fixed w-full z-50 bg-card/80 backdrop-blur-md border-b border-border shadow-sm"
       >
         <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="flex-shrink-0 font-bold text-2xl font-playfair"
-            >
-              <span className="gradient-text">VantagePoint</span>
+            <motion.div whileHover={{ scale: 1.05 }} className="flex-shrink-0 font-bold text-2xl">
+              <span className="bg-gradient-to-r text-white from-white to-red-800/70 ">
+                FindNews!
+              </span>
             </motion.div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-1">
+            <div className="lg:flex hidden">
+              <div className="ml-10 gap-10 md:flex hidden  ">
                 {navigationItems.map((item, index) => (
                   <motion.button
                     key={item}
                     onClick={() => setActiveCategory(item)}
-                    className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-colors group ${
-                      activeCategory === item
-                        ? "text-primary bg-primary/10"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
+                    className="text-white"
                     whileHover={{ y: -2 }}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -163,7 +156,7 @@ const NewsHub = () => {
                     {item}
                     {activeCategory === item && (
                       <motion.div
-                        className="absolute inset-0 bg-primary/5 rounded-lg border border-primary/20"
+                        className="absolute text-white inset-0 bg-primary/10 rounded-lg border border-primary/20"
                         layoutId="activeTab"
                         transition={{ duration: 0.2 }}
                       />
@@ -178,21 +171,32 @@ const NewsHub = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-2 rounded-lg bg-secondary/10 text-secondary hover:bg-secondary/20 transition-colors"
+                className="p-2 rounded-lg bg-muted hover:bg-accent transition-colors"
               >
-                <Bell className="h-5 w-5" />
+                <Bell className="h-5 w-5 text-muted-foreground" />
               </motion.button>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="btn-news-primary"
+                onClick={() => logout()}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex text-white items-center gap-2 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors"
               >
-                Subscribe
+                <LogOut className="w-4 h-4 text-white" />
+                Logout
               </motion.button>
             </div>
 
             {/* Mobile menu button */}
-            <div className="md:hidden">
+            <div className="md:hidden flex items-center space-x-3">
+              <motion.button
+                onClick={() => logout()}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex text-white items-center gap-2 px-3 py-2 bg-red-800/70 rounded-lg text-sm"
+              >
+                <LogOut className="w-4 h-4 text-white" />
+                Logout
+              </motion.button>
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -211,9 +215,24 @@ const NewsHub = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden glass border-t border-border/50"
+              className="md:hidden bg-card/80 backdrop-blur-md border-t border-border"
             >
-              <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+              <div className="px-2 pt-2 pb-3 space-y-3 sm:px-3">
+                {/* Mobile Search Bar */}
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search breaking news..."
+                    className="w-full pl-10 pr-4 py-3 text-sm bg-input border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+
+                {/* Mobile Navigation */}
                 {navigationItems.map((item, index) => (
                   <motion.button
                     key={item}
@@ -240,50 +259,26 @@ const NewsHub = () => {
         </AnimatePresence>
       </motion.nav>
 
-      {/* Breaking News Ticker */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="fixed top-16 w-full bg-primary text-primary-foreground z-40 py-2"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center space-x-4">
-            <div className="breaking-badge">
-              <Zap className="h-3 w-3 mr-1 inline" />
-              BREAKING
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <motion.div
-                animate={{ x: [1000, -1000] }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="whitespace-nowrap text-sm font-medium"
-              >
-                {featuredArticle?.title || "Latest news updates coming in..."}
-              </motion.div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Hero Section */}
+      {/* Hero Section with News Background */}
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
-        className="relative pt-32 pb-12 overflow-hidden"
+        className="relative pt-32 pb-20 overflow-hidden"
         style={{
-          background:
-            "linear-gradient(135deg, hsl(var(--primary) / 0.05) 0%, hsl(var(--secondary) / 0.05) 100%)",
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), url(${newsHeroBg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundAttachment: "fixed",
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-12">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
-              className="inline-flex items-center px-4 py-2 rounded-full bg-accent/10 text-accent font-medium text-sm mb-6 border border-accent/20"
+              className="inline-flex items-center px-6 py-3 rounded-full bg-red-800/20 text-white font-semibold text-sm mb-6 border border-red-800/30 backdrop-blur-sm"
             >
               <Star className="h-4 w-4 mr-2" />
               Trusted News Since 2024
@@ -293,52 +288,71 @@ const NewsHub = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="text-4xl md:text-6xl font-bold mb-6 leading-tight"
+              className="text-5xl md:text-7xl font-bold mb-6 leading-tight text-white"
             >
-              Your <span className="gradient-text">Vantage Point</span> to the World
+              Your <span className="gradient-text">Gateway</span> to the World
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8 leading-relaxed"
+              className="text-xl md:text-2xl text-gray-200 max-w-4xl mx-auto mb-10 leading-relaxed"
             >
-              Stay ahead with breaking news, expert analysis, and perspectives that matter. Your
-              trusted source for global insights.
+              Breaking news from around the globe, delivered fresh every minute. Get comprehensive
+              coverage, expert analysis, and real-time updates on the stories that shape your world.
             </motion.p>
 
             {/* Search Bar */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-              className="max-w-2xl mx-auto relative mb-8"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.8 }}
+              className="max-w-2xl mx-auto mb-8"
             >
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-muted-foreground" />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search breaking news, topics, or sources..."
+                  className="w-full pl-12 pr-4 py-4 text-lg bg-card/90 backdrop-blur-sm border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
-              <input
-                type="text"
-                placeholder="Search breaking news, topics, or sources..."
-                className="w-full pl-12 pr-32 py-4 text-base bg-card border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 shadow-sm"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="absolute right-2 top-2 bottom-2 px-6 btn-news-primary rounded-lg"
-              >
-                Search
-              </motion.button>
+            </motion.div>
+
+            {/* Categories Pills */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.8 }}
+              className="flex flex-wrap justify-center gap-3 mb-10"
+            >
+              {["Breaking", "World", "Politics", "Business", "Technology", "Sports"].map(
+                (category, index) => (
+                  <motion.button
+                    key={category}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.7 + index * 0.1 }}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-6 py-3 bg-card/20 hover:bg-card/30 border border-card/30 rounded-full text-sm font-medium text-white hover:text-primary backdrop-blur-sm transition-all duration-300"
+                  >
+                    {category}
+                  </motion.button>
+                ),
+              )}
             </motion.div>
 
             {/* Quick Stats */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
+              transition={{ delay: 0.8, duration: 0.8 }}
               className="flex flex-wrap justify-center gap-8 text-center"
             >
               {[
@@ -350,13 +364,13 @@ const NewsHub = () => {
                   key={stat.label}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.7 + index * 0.1 }}
-                  className="flex items-center gap-2 px-4 py-2 bg-card/50 rounded-lg border border-border/30"
+                  transition={{ delay: 0.9 + index * 0.1 }}
+                  className="flex items-center gap-3 px-6 py-4 bg-card/20 rounded-xl border border-card/30 backdrop-blur-sm"
                 >
-                  <stat.icon className="h-4 w-4 text-primary" />
+                  <stat.icon className="h-6 w-6 text-red-800" />
                   <div className="text-left">
-                    <div className="text-lg font-bold text-primary">{stat.value}</div>
-                    <div className="text-xs text-muted-foreground">{stat.label}</div>
+                    <div className="text-2xl font-bold text-white">{stat.value}</div>
+                    <div className="text-sm text-gray-300">{stat.label}</div>
                   </div>
                 </motion.div>
               ))}
@@ -366,31 +380,31 @@ const NewsHub = () => {
       </motion.section>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 -mt-10 relative z-20">
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="w-12 h-12 border-3 border-primary border-t-transparent rounded-full"
+              className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full"
             />
           </div>
         ) : error ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="news-card p-8 text-center max-w-md mx-auto"
+            className="bg-card rounded-2xl shadow-lg p-8 text-center max-w-md mx-auto border border-border"
           >
             <div className="text-destructive mb-4">
               <X className="h-12 w-12 mx-auto" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Failed to Load News</h3>
+            <h3 className="text-xl font-semibold mb-2 text-foreground">Failed to Load News</h3>
             <p className="text-muted-foreground mb-6">{error}</p>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={fetchNews}
-              className="btn-news-primary"
+              className="px-6 py-3 bg-primary text-primary-foreground font-medium rounded-lg hover:bg-primary/90 transition-colors"
             >
               Try Again
             </motion.button>
@@ -413,7 +427,7 @@ const NewsHub = () => {
                   className="mb-12"
                 >
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-3xl font-bold flex items-center gap-3">
+                    <h2 className="text-3xl font-bold flex items-center gap-3 text-foreground">
                       <Tag className="h-7 w-7 text-primary" />
                       Featured Story
                     </h2>
@@ -421,25 +435,24 @@ const NewsHub = () => {
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
+                        className="p-3 rounded-xl bg-muted hover:bg-accent transition-colors"
                       >
-                        <Share2 className="h-4 w-4" />
+                        <Share2 className="h-5 w-5 text-muted-foreground" />
                       </motion.button>
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
+                        className="p-3 rounded-xl bg-muted hover:bg-accent transition-colors"
                       >
-                        <Bookmark className="h-4 w-4" />
+                        <Bookmark className="h-5 w-5 text-muted-foreground" />
                       </motion.button>
                     </div>
                   </div>
 
-                  {/* Featured Video */}
-
                   <motion.div
                     whileHover={{ y: -4 }}
-                    className="news-card overflow-hidden group cursor-pointer"
+                    className="bg-card rounded-2xl shadow-lg overflow-hidden group cursor-pointer border border-border"
+                    style={{ boxShadow: "var(--shadow-news-card)" }}
                   >
                     <div className="relative h-96 overflow-hidden">
                       <motion.img
@@ -449,12 +462,12 @@ const NewsHub = () => {
                         whileHover={{ scale: 1.05 }}
                         transition={{ duration: 0.6 }}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
 
                       {/* Article overlay info */}
                       <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
                         <div className="flex items-center gap-4 mb-4">
-                          <span className="category-badge bg-primary/90 text-white border-white/20">
+                          <span className="px-4 py-2 bg-primary/90 text-primary-foreground text-sm font-medium rounded-full border border-primary-foreground/20">
                             {featuredArticle.source.name}
                           </span>
                           <span className="text-sm opacity-90">
@@ -462,7 +475,7 @@ const NewsHub = () => {
                           </span>
                         </div>
 
-                        <h3 className="text-3xl font-bold mb-4 leading-tight group-hover:text-accent transition-colors">
+                        <h3 className="text-3xl font-bold mb-4 leading-tight group-hover:text-red-800 transition-colors">
                           {featuredArticle.title}
                         </h3>
 
@@ -474,7 +487,7 @@ const NewsHub = () => {
                           <div className="flex items-center gap-4 text-sm">
                             <div className="flex items-center gap-1">
                               <User className="h-4 w-4" />
-                              {featuredArticle.author || "VantagePoint"}
+                              {featuredArticle.author || "FindNews!"}
                             </div>
                             <div className="flex items-center gap-1">
                               <Calendar className="h-4 w-4" />
@@ -487,7 +500,7 @@ const NewsHub = () => {
                             target="_blank"
                             rel="noopener noreferrer"
                             whileHover={{ x: 4 }}
-                            className="inline-flex items-center text-accent font-semibold hover:text-accent/80 transition-colors"
+                            className="inline-flex items-center text-red-800 font-semibold hover:text-red-800/80 transition-colors"
                           >
                             Read Full Story
                             <ArrowRight className="ml-2 h-5 w-5" />
@@ -501,7 +514,7 @@ const NewsHub = () => {
                         whileHover={{ opacity: 1 }}
                         className="absolute inset-0 bg-black/20 flex items-center justify-center"
                       >
-                        <div className="bg-white/20 backdrop-blur-sm rounded-full p-6">
+                        <div className="bg-card/20 backdrop-blur-sm rounded-full p-6">
                           <Play className="h-8 w-8 text-white" />
                         </div>
                       </motion.div>
@@ -519,8 +532,8 @@ const NewsHub = () => {
                   className="mb-12"
                 >
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold flex items-center gap-3">
-                      <Zap className="h-6 w-6 text-primary" />
+                    <h2 className="text-2xl font-bold flex items-center gap-3 text-foreground">
+                      <Zap className="h-6 w-6 text-red-800" />
                       Breaking News
                     </h2>
                     <motion.button
@@ -539,8 +552,8 @@ const NewsHub = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: index * 0.1 }}
-                        whileHover={{ y: -2 }}
-                        className="news-card overflow-hidden group cursor-pointer"
+                        whileHover={{ y: -4 }}
+                        className="bg-card rounded-2xl shadow-lg overflow-hidden group cursor-pointer border border-border hover:shadow-xl transition-all duration-300"
                       >
                         <div className="relative h-48 overflow-hidden">
                           <motion.img
@@ -551,13 +564,15 @@ const NewsHub = () => {
                             transition={{ duration: 0.6 }}
                           />
                           <div className="absolute top-3 left-3">
-                            <span className="breaking-badge">BREAKING</span>
+                            <span className="px-3 py-1 bg-red-800 text-destructive-foreground text-xs font-bold rounded-full animate-pulse">
+                              BREAKING
+                            </span>
                           </div>
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                         </div>
 
                         <div className="p-6">
-                          <h3 className="text-lg font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                          <h3 className="text-lg font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors text-foreground">
                             {article.title}
                           </h3>
                           <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
@@ -594,7 +609,7 @@ const NewsHub = () => {
                   transition={{ duration: 0.6, delay: 0.4 }}
                 >
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold flex items-center gap-3">
+                    <h2 className="text-2xl font-bold flex items-center gap-3 text-foreground">
                       <Clock className="h-6 w-6 text-primary" />
                       Latest Stories
                     </h2>
@@ -602,9 +617,9 @@ const NewsHub = () => {
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
+                        className="p-3 rounded-xl bg-muted hover:bg-accent transition-colors"
                       >
-                        <Filter className="h-4 w-4" />
+                        <Filter className="h-5 w-5 text-muted-foreground" />
                       </motion.button>
                     </div>
                   </div>
@@ -616,8 +631,8 @@ const NewsHub = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: index * 0.1 }}
-                        whileHover={{ y: -2 }}
-                        className="news-card overflow-hidden group cursor-pointer"
+                        whileHover={{ y: -4 }}
+                        className="bg-card rounded-2xl shadow-lg overflow-hidden group cursor-pointer border border-border hover:shadow-xl transition-all duration-300"
                       >
                         <div className="md:flex">
                           <div className="md:w-2/5 relative overflow-hidden">
@@ -629,21 +644,23 @@ const NewsHub = () => {
                               transition={{ duration: 0.6 }}
                             />
                             <div className="absolute top-4 left-4">
-                              <span className="category-badge">{article.source.name}</span>
+                              <span className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-full">
+                                {article.source.name}
+                              </span>
                             </div>
                           </div>
 
-                          <div className="p-6 md:w-3/5 flex flex-col justify-between">
+                          <div className="p-8 md:w-3/5 flex flex-col justify-between">
                             <div>
-                              <h3 className="text-xl font-semibold mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                              <h3 className="text-xl font-semibold mb-4 line-clamp-2 group-hover:text-primary transition-colors text-foreground">
                                 {article.title}
                               </h3>
-                              <p className="text-muted-foreground mb-4 line-clamp-3">
+                              <p className="text-muted-foreground mb-6 line-clamp-3">
                                 {article.description}
                               </p>
                             </div>
 
-                            <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                            <div className="flex items-center justify-between pt-4 border-t border-border">
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 <div className="flex items-center gap-1">
                                   <Calendar className="h-4 w-4" />
@@ -651,22 +668,22 @@ const NewsHub = () => {
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <User className="h-4 w-4" />
-                                  {article.author || "VantagePoint"}
+                                  {article.author || "FindNews!"}
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-3">
                                 <motion.button
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
-                                  className="p-1 rounded text-muted-foreground hover:text-primary transition-colors"
+                                  className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
                                 >
                                   <Heart className="h-4 w-4" />
                                 </motion.button>
                                 <motion.button
                                   whileHover={{ scale: 1.1 }}
                                   whileTap={{ scale: 0.9 }}
-                                  className="p-1 rounded text-muted-foreground hover:text-primary transition-colors"
+                                  className="p-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                                 >
                                   <MessageCircle className="h-4 w-4" />
                                 </motion.button>
@@ -700,9 +717,9 @@ const NewsHub = () => {
                 className="sticky top-32 space-y-8"
               >
                 {/* Trending Topics */}
-                <div className="news-card p-6">
-                  <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-primary" />
+                <div className="bg-card rounded-2xl shadow-lg p-6 border border-border">
+                  <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-foreground">
+                    <TrendingUp className="h-5 w-5 text-red-800" />
                     Trending Topics
                   </h3>
                   <div className="space-y-4">
@@ -710,9 +727,9 @@ const NewsHub = () => {
                       <motion.div
                         key={index}
                         whileHover={{ x: 4 }}
-                        className="flex gap-3 group cursor-pointer pb-4 border-b border-border/30 last:border-b-0 last:pb-0"
+                        className="flex gap-3 group cursor-pointer pb-4 border-b border-border last:border-b-0 last:pb-0"
                       >
-                        <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
+                        <div className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden">
                           <img
                             src={article.urlToImage || "/placeholder.svg"}
                             alt={article.title}
@@ -720,7 +737,7 @@ const NewsHub = () => {
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors mb-1">
+                          <h4 className="font-semibold text-sm line-clamp-2 group-hover:text-primary transition-colors mb-1 text-foreground">
                             {article.title}
                           </h4>
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -735,9 +752,9 @@ const NewsHub = () => {
                 </div>
 
                 {/* Newsletter Signup */}
-                <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 p-6 border border-primary/20">
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-red-800/10 to-red-800/70/10 p-6 border border-primary/20">
                   <div className="relative z-10">
-                    <h3 className="text-xl font-bold mb-3">Stay Updated</h3>
+                    <h3 className="text-xl font-bold mb-3 text-foreground">Stay Updated</h3>
                     <p className="text-muted-foreground text-sm mb-4">
                       Get the latest breaking news and analysis delivered straight to your inbox.
                     </p>
@@ -745,12 +762,12 @@ const NewsHub = () => {
                       <input
                         type="email"
                         placeholder="Your email address"
-                        className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm"
+                        className="w-full px-4 py-3 bg-card border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all text-sm"
                       />
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="w-full btn-news-primary"
+                        className="w-full px-6 py-3 bg-primary text-primary-foreground font-medium rounded-xl hover:bg-primary/90 transition-colors"
                       >
                         Subscribe to Newsletter
                       </motion.button>
@@ -759,13 +776,13 @@ const NewsHub = () => {
                       Join 100,000+ readers. Unsubscribe anytime.
                     </p>
                   </div>
-                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/10 rounded-full" />
-                  <div className="absolute -bottom-2 -left-2 w-16 h-16 bg-secondary/10 rounded-full" />
+                  <div className="absolute -top-4 -right-4 w-24 h-24 bg-primary/10 rounded-full opacity-50" />
+                  <div className="absolute -bottom-2 -left-2 w-16 h-16 bg-red-800/10 rounded-full opacity-50" />
                 </div>
 
                 {/* Recent Updates */}
-                <div className="news-card p-6">
-                  <h3 className="text-xl font-bold mb-4">Recent Updates</h3>
+                <div className="bg-card rounded-2xl shadow-lg p-6 border border-border">
+                  <h3 className="text-xl font-bold mb-4 text-foreground">Recent Updates</h3>
                   <div className="space-y-4">
                     {sidebarArticles.slice(0, 4).map((article, index) => (
                       <motion.div
@@ -773,7 +790,7 @@ const NewsHub = () => {
                         whileHover={{ x: 4 }}
                         className="group cursor-pointer"
                       >
-                        <h4 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors mb-2">
+                        <h4 className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors mb-2 text-foreground">
                           {article.title}
                         </h4>
                         <div className="flex items-center justify-between">
